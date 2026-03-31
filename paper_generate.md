@@ -24,19 +24,54 @@ If an `SLR/` directory exists in the project root, it contains literature review
 - Research gaps and open questions identified during the review
 - Comparisons of methods, datasets, or results across papers
 - Key themes, trends, or contradictions in the literature
+- Taxonomy of the field, technical patterns, and traceable research ideas
+
+A deep research prompt template is available at `SLR/deepresearch_prompt.md`. Use it with ChatGPT, Claude, or Gemini to generate SLR content, then save the output as `.md` files in `SLR/`.
 
 **How SLR feeds into the pipeline:**
 
-- **Stage 1 (Idea Setup):** Read all `.md` files in `SLR/` first. Use them to understand the research landscape, identify gaps, and refine (or generate) the research idea. The SLR materials provide the "why" behind the idea.
-- **Stage 4 (Gather Citations):** Extract paper titles, authors, and venues mentioned in the SLR files. Use these as seed citations before searching for additional references. This avoids redundant searches for papers already reviewed.
-- **Stage 5 (Write Paper):** Use the SLR content to write a stronger Related Work section, grounded in the literature already reviewed.
+- **Stage 1 (Idea Setup):** Read all `.md` files in `SLR/` first. Use them to understand the research landscape, identify gaps, and refine (or generate) the research idea.
+- **Stage 4 (Gather Citations):** Extract paper titles, authors, and venues mentioned in the SLR files as seed citations.
+- **Stage 5 (Write Paper):** Use the SLR content to write a stronger Related Work section.
+
+---
+
+## Stage 0: SLR Pre-Check (MANDATORY before starting the pipeline)
+
+Before running any stage, check whether the `SLR/` directory contains deep research output:
+
+1. List all files in `SLR/`
+2. If the **only** file is `SLR/deepresearch_prompt.md` (no other `.md` files), **STOP** and guide the user:
+
+> **You don't have any deep research output yet.**
+>
+> Before starting the paper generation pipeline, you should use the deep research prompt to generate a literature review. This will give the pipeline much stronger foundations — better ideas, better citations, and better related work.
+>
+> **How to generate SLR materials:**
+>
+> 1. Open `SLR/deepresearch_prompt.md`
+> 2. Replace `{topic}` with your research topic
+> 3. Submit the prompt to one of these AI deep research tools:
+>    - **ChatGPT** → use Deep Research mode
+>    - **Claude** → paste into claude.ai
+>    - **Gemini** → use Deep Research mode
+> 4. Copy the AI's output (in markdown format)
+> 5. Save it as a new `.md` file in the `SLR/` directory (e.g., `SLR/my_topic_review.md`)
+> 6. Come back and run the pipeline again
+>
+> **Tip:** You can run multiple sessions with different AI tools or topic angles. Save each output as a separate `.md` file — the pipeline will read all of them.
+
+3. If `SLR/` contains other `.md` files beyond `deepresearch_prompt.md`, proceed to Stage 1.
+4. If `SLR/` does not exist at all and the user has provided a research idea directly, proceed to Stage 1 without SLR.
 
 ---
 
 ## Pipeline Overview
 
 ```
-[SLR Materials (optional)] ─┐
+[SLR Pre-Check] ─────────────→ (guide user if no deep research output)
+                                     │
+[SLR Materials (optional)] ─┐       ↓
                              ├→ Stage 1: Setup workspace + initialize memory
 [Research Idea] ─────────────┘
                               → Stage 2: Run experiments (4 phases)
@@ -435,6 +470,16 @@ self-review it. Save everything under experiments/.
 Read paper_generate.md. I have systematic literature review materials in SLR/.
 Read the SLR files first, then generate a research idea based on the gaps
 and opportunities you find. Follow all 6 stages to produce a complete paper.
+```
+
+**To generate SLR materials from scratch** using the deep research prompt:
+
+```
+1. Open SLR/deepresearch_prompt.md
+2. Replace {topic} with your research topic
+3. Paste the prompt into ChatGPT (Deep Research), Claude, or Gemini (Deep Research)
+4. Copy the output as markdown → save as SLR/your_topic_review.md
+5. Then run the pipeline above with the SLR prompt
 ```
 
 ---

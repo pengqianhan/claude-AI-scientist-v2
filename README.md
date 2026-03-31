@@ -16,6 +16,8 @@ This repo replaces all of that with **6 Claude Code skills** and a single pipeli
 ## How It Works
 
 ```
+                              → Stage 0: SLR Pre-Check (auto)
+                                         ↓ (guides user to run deep research if SLR/ is empty)
 [SLR Materials (optional)] ─┐
                              ├→ Stage 1: Set up workspace + init memory     (skill: idea-setup)
 [Your Research Idea] ────────┘
@@ -66,6 +68,15 @@ Read the SLR files first, then generate a research idea based on the gaps
 and opportunities you find. Follow all 6 stages to produce a complete paper.
 ```
 
+**Generate SLR from scratch:** The repo includes a deep research prompt template at `SLR/deepresearch_prompt.md`. Use it to generate comprehensive literature reviews with any AI deep research tool:
+
+1. Open `SLR/deepresearch_prompt.md` and replace `{topic}` with your research topic
+2. Paste the prompt into **ChatGPT** (Deep Research), **Claude**, or **Gemini** (Deep Research)
+3. Copy the AI's output as markdown and save it in `SLR/` (e.g., `SLR/my_topic_review.md`)
+4. Run the pipeline with the SLR prompt above
+
+The deep research prompt generates a structured output including: literature database, taxonomy, gap analysis, and traceable research ideas — all of which feed directly into the pipeline.
+
 Claude Code will work through all 6 stages autonomously, using the skills defined in `.claude/skills/`.
 
 ## Project Structure
@@ -74,7 +85,8 @@ Claude Code will work through all 6 stages autonomously, using the skills define
 .
 ├── paper_generate.md              # Main pipeline document (the "brain")
 ├── SLR/                           # (optional) Systematic literature review markdown files
-│   ├── review_topic_A.md
+│   ├── deepresearch_prompt.md     # Template prompt for AI deep research tools
+│   ├── review_topic_A.md          # Deep research output (from ChatGPT/Claude/Gemini)
 │   └── review_topic_B.md
 ├── .claude/
 │   └── skills/
