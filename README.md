@@ -1,4 +1,4 @@
-# Claude AI Scientist v2
+# Claude AI Scientist
 
 Use **Claude Code** (CLI / Desktop / IDE extension) to autonomously generate scientific papers — from idea to PDF — without any API keys. Just a Claude subscription.
 
