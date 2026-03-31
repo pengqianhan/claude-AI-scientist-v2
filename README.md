@@ -152,7 +152,8 @@ See `paper_generate.md` for full details on the memory architecture and event sc
 
 ## Credits
 
-The skills and pipeline design are derived from [SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2). This repo adapts their approach for native use within Claude Code.
+- The skills and pipeline design are derived from [SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2). This repo adapts their approach for native use within Claude Code.
+- The long-term memory and idea evolution system is inspired by [facebookresearch/Hyperagents](https://github.com/facebookresearch/Hyperagents), which uses a multi-layered memory architecture (append-only event logs, evolutionary lineage tracking, and performance-based selection) to enable agents to learn and evolve across generations.
 
 ## License
 
