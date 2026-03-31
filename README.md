@@ -38,7 +38,7 @@ This repo replaces all of that with **6 Claude Code skills** and a single pipeli
 ### 2. Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-AI-scientist-v2.git
+git clone https://github.com/pengqianhan/claude-AI-scientist-v2.git
 cd claude-AI-scientist-v2
 ```
 
