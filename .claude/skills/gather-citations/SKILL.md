@@ -12,12 +12,22 @@ You are building the bibliography for a scientific paper. Your job is to systema
 - `idea.md` — the research idea (to know what to cite)
 - Experiment summaries (baseline, research, ablation JSONs) — to know what methods/datasets were used
 - Web search capability (for finding papers)
+- `SLR/` directory (optional) — systematic literature review markdown files with paper references
 
 ## Step-by-Step Process
 
+### 0. Extract Citations from SLR (if available)
+
+If an `SLR/` directory exists in the project root, read all `.md` files in it. Extract any paper references found (titles, authors, years, venues, arXiv IDs, DOIs). For each reference:
+1. Create a BibTeX entry and add it to `references.bib`
+2. Use the Semantic Scholar API to verify and complete missing fields (authors, venue, year)
+3. Note which citation category each paper covers
+
+This gives you a head start — many needed citations may already be in the SLR.
+
 ### 1. Identify Citation Needs
 
-Read `idea.md` and the experiment summaries. Make a checklist of papers you need to find:
+Read `idea.md`, the experiment summaries, and `slr_synthesis.md` (if it exists). Make a checklist of papers you need to find. Mark categories already covered by SLR-extracted citations:
 
 **Category checklist:**
 - [ ] The core problem being addressed (seminal papers in the area)

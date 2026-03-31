@@ -8,20 +8,43 @@ Copy the `skills/` directory and this file into any repo. Then tell Claude Code:
 
 > "Read paper_generate.md and follow the pipeline to generate a paper about [your idea]."
 
+If you have a Systematic Literature Review (SLR), place your markdown files in the `SLR/` directory and tell Claude Code:
+
+> "Read paper_generate.md. Use the SLR materials in `SLR/` to generate a research idea and produce a paper."
+
 Claude Code will use the skills to work through each stage autonomously.
+
+---
+
+## SLR (Systematic Literature Review) Input
+
+If an `SLR/` directory exists in the project root, it contains literature review materials in markdown format (one or more `.md` files). These files may include:
+
+- Summaries of existing papers and their findings
+- Research gaps and open questions identified during the review
+- Comparisons of methods, datasets, or results across papers
+- Key themes, trends, or contradictions in the literature
+
+**How SLR feeds into the pipeline:**
+
+- **Stage 1 (Idea Setup):** Read all `.md` files in `SLR/` first. Use them to understand the research landscape, identify gaps, and refine (or generate) the research idea. The SLR materials provide the "why" behind the idea.
+- **Stage 4 (Gather Citations):** Extract paper titles, authors, and venues mentioned in the SLR files. Use these as seed citations before searching for additional references. This avoids redundant searches for papers already reviewed.
+- **Stage 5 (Write Paper):** Use the SLR content to write a stronger Related Work section, grounded in the literature already reviewed.
 
 ---
 
 ## Pipeline Overview
 
 ```
-[Research Idea] → Stage 1: Setup workspace
-                → Stage 2: Write & run experiments (4 phases)
-                → Stage 3: Create publication figures
-                → Stage 4: Gather citations
-                → Stage 5: Write LaTeX paper
-                → Stage 6: Self-review with scores
-                → [Finished Paper PDF + Review]
+[SLR Materials (optional)] ─┐
+                             ├→ Stage 1: Setup workspace (idea from SLR or user)
+[Research Idea] ─────────────┘
+                              → Stage 2: Write & run experiments (4 phases)
+                              → Stage 3: Create publication figures
+                              → Stage 4: Gather citations (seeded from SLR)
+                              → Stage 5: Write LaTeX paper (Related Work from SLR)
+                              → Stage 6: Self-review with scores
+                              → [Finished Paper PDF + Review]
 ```
 
 ---
@@ -30,9 +53,15 @@ Claude Code will use the skills to work through each stage autonomously.
 
 **Skill:** `idea-setup`
 
-**Input:** A research idea (from the user, a JSON file, or a conversation)
+**Input:** A research idea (from the user, a JSON file, or a conversation), optionally informed by SLR materials
 
 **What to do:**
+
+0. **If `SLR/` directory exists:** Read all `.md` files in `SLR/`. Synthesize the key findings, research gaps, and open questions. Use this synthesis to:
+   - Generate a research idea (if the user hasn't provided one)
+   - Refine and strengthen the user's idea with evidence from the literature
+   - Identify appropriate baselines and datasets mentioned in the reviewed papers
+   - Write an `slr_synthesis.md` summary in the experiment workspace
 1. Clarify the idea — pin down the hypothesis, method, datasets, metrics, and baselines
 2. Create the experiment workspace directory structure
 3. Write `idea.md` (structured experiment plan with 4 stages)
@@ -46,6 +75,7 @@ experiments/{idea_name}/
 ├── idea.md
 ├── idea.json
 ├── config.yaml
+├── slr_synthesis.md    # (if SLR/ exists) Summary of literature review findings
 ├── data/
 ├── logs/
 ├── experiment_results/
@@ -151,11 +181,12 @@ experiments/{idea_name}/
 
 **Skill:** `gather-citations`
 
-**Input:** `idea.md` and experiment summaries
+**Input:** `idea.md`, experiment summaries, and optionally `SLR/` materials
 
 **What to do:**
-1. Make a checklist of citation categories needed (core problem, methods, datasets, baselines, related work, etc.)
-2. For each category, search for relevant papers using:
+1. **If `SLR/` directory exists:** Scan all `.md` files in `SLR/` for paper references (titles, authors, years, venues, arXiv IDs). Extract these as seed citations and add them to `references.bib` first. This avoids redundant API searches for papers already reviewed.
+2. Make a checklist of citation categories needed (core problem, methods, datasets, baselines, related work, etc.). Mark categories already covered by SLR-extracted citations.
+3. For remaining gaps, search for relevant papers using:
    - Semantic Scholar API: `curl "https://api.semanticscholar.org/graph/v1/paper/search?query=...&fields=title,authors,year,venue"`
    - Web search as fallback
 3. Build BibTeX entries for each paper
@@ -252,6 +283,14 @@ Read paper_generate.md. I want to generate a research paper about:
 Follow all 6 stages. Set up the workspace, implement and run the experiments,
 create publication figures, gather citations, write the LaTeX paper, and
 self-review it. Save everything under experiments/.
+```
+
+**If you have SLR materials**, place `.md` files in `SLR/` and use this prompt instead:
+
+```
+Read paper_generate.md. I have systematic literature review materials in SLR/.
+Read the SLR files first, then generate a research idea based on the gaps
+and opportunities you find. Follow all 6 stages to produce a complete paper.
 ```
 
 ---

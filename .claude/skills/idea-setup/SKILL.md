@@ -24,6 +24,21 @@ experiments/{idea_name}/
 
 ## Step-by-Step Process
 
+### 0. Read SLR Materials (if available)
+
+If an `SLR/` directory exists in the project root, read all `.md` files in it before proceeding. These contain systematic literature review notes. Synthesize them to:
+
+- Understand the research landscape and state of the art
+- Identify research gaps and open questions
+- Extract baselines, datasets, and methods mentioned in the reviewed papers
+- Generate or refine the research idea based on opportunities found
+
+Write an `slr_synthesis.md` file in the experiment workspace summarizing:
+- Key findings from the literature
+- Identified research gaps
+- How the proposed idea addresses these gaps
+- Relevant papers and their contributions (for later citation gathering)
+
 ### 1. Clarify the Research Idea
 
 If the user gives a vague idea, ask clarifying questions to pin down:
@@ -34,6 +49,7 @@ If the user gives a vague idea, ask clarifying questions to pin down:
 - **What baselines should be compared against?**
 
 If the user provides a detailed idea (or a JSON file), extract these directly.
+If SLR materials were read in Step 0, use the synthesis to inform and strengthen these answers.
 
 ### 2. Create the Workspace Directory
 
