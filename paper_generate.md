@@ -1,16 +1,16 @@
 # Paper Generation Pipeline
 
-This document guides Claude Code through the complete process of generating a scientific paper from a research idea — without depending on any existing codebase. Just follow the 6 stages in order.
+This document guides Claude Code through the complete process of generating a scientific paper from a research idea — without depending on any existing codebase. Follow Stage 0 first, then Stages 1-6 in order.
 
 ## How to Use
 
 Copy the `skills/` directory and this file into any repo. Then tell Claude Code:
 
-> "Read paper_generate.md and follow the pipeline to generate a paper about [your idea]."
+> "Read paper_generate.md and run Stage 0 first, then Stages 1-6 to generate a paper about [your idea]."
 
 If you have a Systematic Literature Review (SLR), place your markdown files in the `SLR/` directory and tell Claude Code:
 
-> "Read paper_generate.md. Use the SLR materials in `SLR/` to generate a research idea and produce a paper."
+> "Read paper_generate.md. Run Stage 0 first, then use the SLR materials in `SLR/` to generate a research idea and produce a paper."
 
 Claude Code will use the skills to work through each stage autonomously.
 
@@ -459,7 +459,7 @@ Read paper_generate.md. I want to generate a research paper about:
 
 [Describe your research idea here]
 
-Follow all 6 stages. Set up the workspace, implement and run the experiments,
+Run Stage 0 first, then follow Stages 1-6. Set up the workspace, implement and run the experiments,
 create publication figures, gather citations, write the LaTeX paper, and
 self-review it. Save everything under experiments/.
 ```
@@ -469,7 +469,8 @@ self-review it. Save everything under experiments/.
 ```
 Read paper_generate.md. I have systematic literature review materials in SLR/.
 Read the SLR files first, then generate a research idea based on the gaps
-and opportunities you find. Follow all 6 stages to produce a complete paper.
+and opportunities you find. Run Stage 0 first, then follow Stages 1-6 to
+produce a complete paper.
 ```
 
 **To generate SLR materials from scratch** using the deep research prompt:
