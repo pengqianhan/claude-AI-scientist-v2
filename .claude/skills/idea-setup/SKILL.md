@@ -9,13 +9,16 @@ You are setting up a structured research experiment workspace from a research id
 
 ## What You Produce
 
-A workspace directory with everything needed to start experimenting:
+A workspace directory with everything needed to start experimenting, including initialized long-term memory:
 
 ```
 experiments/{idea_name}/
-├── idea.md              # Structured research plan
-├── idea.json            # Machine-readable idea metadata
+├── idea.md              # Structured research plan (version 1)
+├── idea.json            # Machine-readable metadata (version 1)
+├── idea_evolution.md    # Idea changelog (initialized with version 1)
+├── research_log.jsonl   # Append-only event log (initialized)
 ├── config.yaml          # Experiment configuration
+├── slr_synthesis.md     # (if SLR/ exists) Literature review synthesis
 ├── data/                # For datasets (empty initially)
 ├── logs/                # For experiment logs
 ├── experiment_results/  # For results, .npy files, intermediate plots
@@ -112,7 +115,7 @@ Adapt the structure to the specific research area. For instance, a generative mo
 
 ### 4. Write idea.json
 
-Store machine-readable metadata:
+Store machine-readable metadata with version tracking:
 
 ```json
 {
@@ -124,7 +127,10 @@ Store machine-readable metadata:
   "Datasets": ["CIFAR-10"],
   "Interestingness": 8,
   "Feasibility": 7,
-  "Novelty": 7
+  "Novelty": 7,
+  "version": 1,
+  "last_updated": "2026-03-31T10:00:00",
+  "update_reason": "Initial idea"
 }
 ```
 
@@ -164,7 +170,31 @@ log_dir: "logs"
 
 Adjust the config to match the specific experiment type (e.g., add `latent_dim` for VAEs, `gamma` for RL).
 
-### 6. Optionally Scaffold Starter Code
+### 6. Initialize Long-Term Memory
+
+Create the memory files that track idea evolution throughout the pipeline:
+
+**`research_log.jsonl`** — Append-only event log. Initialize with:
+```jsonl
+{"timestamp": "<current_time>", "event": "idea_initialized", "version": 1, "summary": "<one-line hypothesis>", "source": "<user|SLR|user+SLR>"}
+```
+
+**`idea_evolution.md`** — Human-readable changelog. Initialize with:
+```markdown
+# Idea Evolution Log
+
+This document tracks how the research idea evolves based on experiment results.
+
+## Version 1 (Initial)
+- **Hypothesis:** <the specific claim being tested>
+- **Source:** <where the idea came from: user input, SLR analysis, or both>
+- **Key assumptions:** <what must be true for the hypothesis to hold>
+- **Success criteria:** <what experimental results would support the hypothesis>
+```
+
+These memory files will be updated by the `run-experiments` skill whenever experiment results require changes to the hypothesis.
+
+### 7. Optionally Scaffold Starter Code
 
 If the idea involves common ML patterns, create a minimal `runfile.py` skeleton:
 

@@ -37,15 +37,112 @@ If an `SLR/` directory exists in the project root, it contains literature review
 
 ```
 [SLR Materials (optional)] ─┐
-                             ├→ Stage 1: Setup workspace (idea from SLR or user)
+                             ├→ Stage 1: Setup workspace + initialize memory
 [Research Idea] ─────────────┘
-                              → Stage 2: Write & run experiments (4 phases)
+                              → Stage 2: Run experiments (4 phases)
+                              │           ↕ feedback loop: results update idea
+                              │           (research_log.jsonl tracks all changes)
                               → Stage 3: Create publication figures
                               → Stage 4: Gather citations (seeded from SLR)
-                              → Stage 5: Write LaTeX paper (Related Work from SLR)
+                              → Stage 5: Write LaTeX paper (reflects evolved idea)
                               → Stage 6: Self-review with scores
                               → [Finished Paper PDF + Review]
 ```
+
+---
+
+## Long-Term Memory System
+
+Inspired by [Hyperagents](https://github.com/facebookresearch/Hyperagents), this pipeline maintains a **three-layer memory** that tracks how the research idea evolves through experimentation. The idea is not static — it is a living hypothesis that gets updated as evidence accumulates.
+
+### Memory Architecture
+
+```
+experiments/{idea_name}/
+├── research_log.jsonl       # Layer 1: Append-only event log (machine-readable)
+├── idea_evolution.md        # Layer 2: Human-readable idea change history
+├── idea.md                  # Layer 3: Current state (always up-to-date)
+└── idea.json                # Layer 3: Current metadata (always up-to-date)
+```
+
+### Layer 1: Research Log (`research_log.jsonl`)
+
+An **append-only** event journal (one JSON object per line). Every significant event during the pipeline is logged here. This is the single source of truth for what happened and when.
+
+**Event types:**
+
+```jsonl
+{"timestamp": "2026-03-31T10:00:00", "event": "idea_initialized", "version": 1, "summary": "Initial hypothesis: X outperforms Y on task Z", "source": "user+SLR"}
+{"timestamp": "2026-03-31T10:30:00", "event": "experiment_started", "phase": 1, "description": "Initial implementation of method X"}
+{"timestamp": "2026-03-31T11:00:00", "event": "experiment_completed", "phase": 1, "metrics": {"train_loss": 0.34, "test_acc": 0.72}, "supports_hypothesis": true, "analysis": "Basic results look promising"}
+{"timestamp": "2026-03-31T12:00:00", "event": "experiment_completed", "phase": 2, "metrics": {"proposed_acc": 0.75, "baseline_acc": 0.78}, "supports_hypothesis": false, "analysis": "Baseline outperforms on accuracy, but proposed method has 2x faster training"}
+{"timestamp": "2026-03-31T12:05:00", "event": "idea_updated", "version": 2, "change": "Shifted claim from accuracy improvement to efficiency-accuracy tradeoff", "reason": "Phase 2 results show proposed method is faster but not more accurate", "fields_changed": ["hypothesis", "expected_outcomes", "metrics"]}
+{"timestamp": "2026-03-31T14:00:00", "event": "experiment_completed", "phase": 3, "metrics": {"proposed_acc": 0.81, "baseline_acc": 0.80, "proposed_time": 45, "baseline_time": 120}, "supports_hypothesis": true, "analysis": "At full scale, accuracy gap closes while speed advantage holds"}
+{"timestamp": "2026-03-31T15:00:00", "event": "idea_updated", "version": 3, "change": "Added scaling analysis as key contribution", "reason": "Phase 3 shows the advantage grows with dataset size", "fields_changed": ["contributions", "experiment_plan"]}
+```
+
+### Layer 2: Idea Evolution (`idea_evolution.md`)
+
+A **human-readable changelog** that records each version of the idea with the reasoning behind changes. This feeds directly into the paper's narrative.
+
+```markdown
+## Version 1 (Initial)
+- **Hypothesis:** Method X outperforms baseline Y on task Z
+- **Source:** User idea + SLR gap analysis
+- **Key assumptions:** X's attention mechanism captures long-range dependencies better
+
+## Version 2 (After Phase 2)
+- **Hypothesis:** Method X achieves comparable accuracy to Y with 2x training speedup
+- **What changed:** Shifted primary claim from accuracy to efficiency
+- **Why:** Baseline matched accuracy (0.78 vs 0.75), but proposed method trained 2x faster
+- **Impact on experiment plan:** Added wall-clock time as primary metric, kept accuracy as secondary
+
+## Version 3 (After Phase 3)
+- **Hypothesis:** Method X matches accuracy and scales better than Y on large datasets
+- **What changed:** Added scaling behavior as key contribution
+- **Why:** At full scale, accuracy gap closed (0.81 vs 0.80) while speed advantage increased (2.7x)
+- **Impact on paper:** Reframed Introduction around efficiency-at-scale narrative
+```
+
+### Layer 3: Current State (`idea.md` + `idea.json`)
+
+These files always reflect the **latest version** of the idea. When the idea is updated, these files are rewritten in place (the old version is preserved in Layer 2).
+
+`idea.json` includes a version counter and last-modified timestamp:
+```json
+{
+  "Name": "efficient_attention",
+  "Title": "...",
+  "version": 3,
+  "last_updated": "2026-03-31T15:00:00",
+  "update_reason": "Phase 3 results confirmed scaling advantage",
+  ...
+}
+```
+
+### When to Update the Idea
+
+After each experiment phase, evaluate results against the current hypothesis:
+
+| Result | Action |
+|--------|--------|
+| **Strongly supports** hypothesis | Log confirmation, no idea change needed |
+| **Partially supports** (some metrics good, others not) | Update hypothesis to emphasize supported aspects, adjust claims |
+| **Contradicts** hypothesis | Pivot the idea: change hypothesis, redefine success metrics, or propose new explanation |
+| **Reveals unexpected finding** | Expand the idea to incorporate the new finding as a contribution |
+
+**Critical rule:** Never ignore contradictory evidence. If the experiment doesn't support the claim, update the claim — don't cherry-pick results.
+
+### Memory Operations
+
+The pipeline uses these operations throughout:
+
+| Operation | When | What |
+|-----------|------|------|
+| `log_event()` | Every significant action | Append to `research_log.jsonl` |
+| `update_idea()` | After experiment results contradict or expand the hypothesis | Update `idea.md`, `idea.json`, append to `idea_evolution.md`, log to `research_log.jsonl` |
+| `read_memory()` | Before each stage | Read `research_log.jsonl` and `idea_evolution.md` to understand current state |
+| `get_idea_version()` | Before writing paper | Check version in `idea.json` to ensure paper reflects final idea |
 
 ---
 
@@ -64,25 +161,30 @@ If an `SLR/` directory exists in the project root, it contains literature review
    - Write an `slr_synthesis.md` summary in the experiment workspace
 1. Clarify the idea — pin down the hypothesis, method, datasets, metrics, and baselines
 2. Create the experiment workspace directory structure
-3. Write `idea.md` (structured experiment plan with 4 stages)
-4. Write `idea.json` (machine-readable metadata)
+3. Write `idea.md` (structured experiment plan with 4 stages, version 1)
+4. Write `idea.json` (machine-readable metadata, with `"version": 1`)
 5. Write `config.yaml` (experiment hyperparameters)
-6. Optionally scaffold a starter `runfile.py`
+6. **Initialize long-term memory:**
+   - Create `research_log.jsonl` with the first `idea_initialized` event
+   - Create `idea_evolution.md` with Version 1 entry (initial hypothesis, source, key assumptions)
+7. Optionally scaffold a starter `runfile.py`
 
 **Output:**
 ```
 experiments/{idea_name}/
-├── idea.md
-├── idea.json
+├── idea.md                 # Current idea (version 1)
+├── idea.json               # Machine-readable metadata (version 1)
+├── idea_evolution.md        # Idea changelog (initialized)
+├── research_log.jsonl       # Event log (initialized)
 ├── config.yaml
-├── slr_synthesis.md    # (if SLR/ exists) Summary of literature review findings
+├── slr_synthesis.md         # (if SLR/ exists)
 ├── data/
 ├── logs/
 ├── experiment_results/
 └── figures/
 ```
 
-**Move to Stage 2 when:** The workspace is set up and the experiment plan is clear.
+**Move to Stage 2 when:** The workspace is set up, the experiment plan is clear, and memory is initialized.
 
 ---
 
@@ -90,32 +192,61 @@ experiments/{idea_name}/
 
 **Skill:** `run-experiments`
 
-**Input:** The workspace from Stage 1
+**Input:** The workspace from Stage 1 (including initialized memory)
 
-**What to do:** Work through 4 sequential phases:
+**What to do:** Work through 4 sequential phases. **After each phase, evaluate results against the current hypothesis and update the idea if needed.**
 
 ### Phase 1: Initial Implementation
+- Read current `idea.md` to understand what to implement
 - Write Python code implementing the proposed method
 - Run it, debug errors, verify it produces reasonable results
 - Save metrics to stdout as `METRIC_NAME: VALUE`
 - Save numerical data as `.npy` files in `experiment_results/`
+- **→ Log:** Append `experiment_completed` event to `research_log.jsonl`
+- **→ Evaluate:** Do initial results support the hypothesis? Log the assessment.
 
 ### Phase 2: Baseline Comparison
+- **→ Read memory:** Check `research_log.jsonl` for Phase 1 findings before proceeding
 - Implement baseline methods
 - Run all methods (proposed + baselines) with same conditions
 - Use at least 3 random seeds
 - Generate comparison data
+- **→ Log:** Append `experiment_completed` event with `supports_hypothesis` field
+- **→ Evaluate & Update:** Compare proposed method vs baselines. If results contradict the hypothesis (e.g., baseline wins), **update the idea**:
+  1. Append new version to `idea_evolution.md` with what changed and why
+  2. Rewrite `idea.md` and `idea.json` to reflect the updated hypothesis (increment version)
+  3. Log `idea_updated` event to `research_log.jsonl`
+  4. Adjust remaining experiment plan if needed
 
 ### Phase 3: Full Experiments
+- **→ Read memory:** Check `idea_evolution.md` for the latest hypothesis version
 - Scale up to full dataset and thorough evaluation
 - Run multiple seeds, compute mean +/- std
 - Generate learning curves, performance tables
 - Run statistical significance tests if applicable
+- **→ Log & Evaluate:** Same feedback loop as Phase 2
 
 ### Phase 4: Ablation Studies
+- **→ Read memory:** Check latest idea version — ablate components of the *current* method (which may have evolved)
 - Identify key components of the proposed method
 - Systematically remove/modify each one
 - Measure and record the impact
+- **→ Log & Evaluate:** If ablations reveal a component is unnecessary, update the idea
+
+### Feedback Loop Summary
+
+After each phase, follow this protocol:
+
+```
+1. Log experiment results → research_log.jsonl
+2. Compare results against current hypothesis in idea.md
+3. Classify: supports / partially supports / contradicts / unexpected finding
+4. If idea needs updating:
+   a. Append new version to idea_evolution.md (what changed + why)
+   b. Rewrite idea.md and idea.json (increment version)
+   c. Log idea_updated event to research_log.jsonl
+5. Proceed to next phase with updated understanding
+```
 
 **For each experiment run:**
 - Execute the code
@@ -126,6 +257,10 @@ experiments/{idea_name}/
 **Output:**
 ```
 experiments/{idea_name}/
+├── idea.md                  # Updated to final version
+├── idea.json                # Updated with final version number
+├── idea_evolution.md         # Complete history of idea changes
+├── research_log.jsonl        # Full event log
 ├── baseline_summary.json
 ├── research_summary.json
 ├── ablation_summary.json
@@ -134,7 +269,7 @@ experiments/{idea_name}/
 │   └── *.png (diagnostic plots)
 ```
 
-**Move to Stage 3 when:** All 4 phases are complete and results look reasonable.
+**Move to Stage 3 when:** All 4 phases are complete, results look reasonable, and `idea.md` reflects the final evolved hypothesis.
 
 ---
 
@@ -211,9 +346,14 @@ experiments/{idea_name}/
 
 **Skill:** `write-paper`
 
-**Input:** Everything from Stages 1-4
+**Input:** Everything from Stages 1-4, especially:
+- `idea.md` (final evolved version — check `idea.json` version number)
+- `idea_evolution.md` (use to craft the paper's narrative arc)
+- `research_log.jsonl` (use to ensure all findings are reflected)
 
 **What to do:**
+
+0. **Read memory first:** Read `idea_evolution.md` to understand how the idea evolved. If the idea changed significantly, the paper should tell the story of discovery — frame unexpected findings as contributions, not as failures of the original hypothesis.
 1. Create `latex/template.tex` using a standard ML paper structure
 2. Write each section:
    - **Abstract** (150-250 words, write LAST)
@@ -252,8 +392,12 @@ experiments/{idea_name}/
 
 **What to do:**
 1. Read the entire paper carefully
-2. Evaluate against NeurIPS review criteria
-3. Produce a structured JSON review with:
+2. **Cross-check with memory:** Read `research_log.jsonl` and `idea_evolution.md`. Verify that:
+   - The paper's claims match the final idea version (not an outdated version)
+   - All significant experimental findings are reported (no omitted contradictory results)
+   - The narrative is consistent with how the idea actually evolved
+3. Evaluate against NeurIPS review criteria
+4. Produce a structured JSON review with:
    - Summary, Strengths, Weaknesses
    - Scores: Originality (1-4), Quality (1-4), Clarity (1-4), Significance (1-4)
    - Soundness (1-4), Presentation (1-4), Contribution (1-4)

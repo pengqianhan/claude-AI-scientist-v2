@@ -16,14 +16,16 @@ This repo replaces all of that with **6 Claude Code skills** and a single pipeli
 ## How It Works
 
 ```
-[Your Research Idea]
-    → Stage 1: Set up experiment workspace        (skill: idea-setup)
-    → Stage 2: Write & run experiments (4 phases)  (skill: run-experiments)
-    → Stage 3: Create publication-quality figures   (skill: aggregate-plots)
-    → Stage 4: Search & compile citations           (skill: gather-citations)
-    → Stage 5: Write full LaTeX paper               (skill: write-paper)
-    → Stage 6: Self-review in NeurIPS format        (skill: perform-review)
-    → [Finished Paper PDF + Review JSON]
+[SLR Materials (optional)] ─┐
+                             ├→ Stage 1: Set up workspace + init memory     (skill: idea-setup)
+[Your Research Idea] ────────┘
+                              → Stage 2: Run experiments (4 phases)          (skill: run-experiments)
+                              │           ↕ feedback loop: results ↔ idea
+                              → Stage 3: Create publication-quality figures   (skill: aggregate-plots)
+                              → Stage 4: Search & compile citations           (skill: gather-citations)
+                              → Stage 5: Write LaTeX paper (evolved idea)     (skill: write-paper)
+                              → Stage 6: Self-review in NeurIPS format        (skill: perform-review)
+                              → [Finished Paper PDF + Review JSON]
 ```
 
 ## Quick Start
@@ -56,6 +58,14 @@ create publication figures, gather citations, write the LaTeX paper, and
 self-review it. Save everything under experiments/.
 ```
 
+**With SLR materials:** If you have a systematic literature review, place your `.md` files in the `SLR/` directory and use this prompt instead:
+
+```
+Read paper_generate.md. I have systematic literature review materials in SLR/.
+Read the SLR files first, then generate a research idea based on the gaps
+and opportunities you find. Follow all 6 stages to produce a complete paper.
+```
+
 Claude Code will work through all 6 stages autonomously, using the skills defined in `.claude/skills/`.
 
 ## Project Structure
@@ -63,6 +73,9 @@ Claude Code will work through all 6 stages autonomously, using the skills define
 ```
 .
 ├── paper_generate.md              # Main pipeline document (the "brain")
+├── SLR/                           # (optional) Systematic literature review markdown files
+│   ├── review_topic_A.md
+│   └── review_topic_B.md
 ├── .claude/
 │   └── skills/
 │       ├── idea-setup/            # Stage 1: Workspace & experiment planning
@@ -79,6 +92,9 @@ After running, your experiment output will look like:
 ```
 experiments/{idea_name}/
 ├── idea.md / idea.json / config.yaml
+├── idea_evolution.md     # How the idea changed during experiments
+├── research_log.jsonl    # Append-only event log (all experiments + idea updates)
+├── slr_synthesis.md      (if SLR/ was used)
 ├── data/
 ├── logs/
 ├── experiment_results/   (*.npy, *.png)
@@ -89,6 +105,31 @@ experiments/{idea_name}/
 │   └── template.pdf
 └── review_text.json
 ```
+
+## Long-Term Memory & Idea Evolution
+
+Inspired by [Hyperagents](https://github.com/facebookresearch/Hyperagents), this pipeline treats the research idea as a **living hypothesis** that evolves based on experiment results — just like real research.
+
+### Three-Layer Memory
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Event Log | `research_log.jsonl` | Append-only record of all experiments and idea changes (machine-readable) |
+| Idea History | `idea_evolution.md` | Human-readable changelog: what changed, why, and how it affects the paper |
+| Current State | `idea.md` + `idea.json` | Always reflects the latest hypothesis (version-tracked) |
+
+### How It Works
+
+After each experiment phase, the pipeline evaluates results against the current hypothesis:
+
+- **Results support the hypothesis** → log confirmation, proceed
+- **Results partially support** → shift emphasis (e.g., "faster" instead of "more accurate")
+- **Results contradict** → pivot the idea, redefine success criteria
+- **Unexpected finding** → expand the idea with a new contribution
+
+The paper (Stage 5) is written based on the **final evolved idea**, and the review (Stage 6) cross-checks that the paper accurately reflects all experimental findings.
+
+See `paper_generate.md` for full details on the memory architecture and event schema.
 
 ## Tips
 
@@ -107,6 +148,7 @@ experiments/{idea_name}/
 | Setup complexity | High (env, keys, configs) | Clone + run |
 | Cost | API usage fees | Claude subscription only |
 | Flexibility | Fixed pipeline | Conversational, interactive |
+| Idea evolution | Static hypothesis | Dynamic: idea updates based on results |
 
 ## Credits
 

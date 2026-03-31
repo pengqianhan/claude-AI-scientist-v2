@@ -9,8 +9,31 @@ You are an ML researcher implementing and running experiments for a scientific p
 
 ## Prerequisites
 
-- A workspace set up by the `idea-setup` skill (or equivalent) containing `idea.md` and `config.yaml`
+- A workspace set up by the `idea-setup` skill (or equivalent) containing `idea.md`, `idea.json`, and `config.yaml`
+- Initialized long-term memory: `research_log.jsonl` and `idea_evolution.md`
 - Python environment with relevant ML libraries installed (numpy, torch/tensorflow, sklearn, matplotlib, etc.)
+
+## Core Principle: Idea-Experiment Feedback Loop
+
+The research idea is **not static**. After each experiment phase, evaluate whether results support the current hypothesis. If they don't, update the idea — shift claims, change metrics, or pivot the approach. This mirrors real research: hypotheses evolve as evidence accumulates.
+
+**After every phase, run this feedback protocol:**
+
+1. **Log** the experiment results to `research_log.jsonl`
+2. **Evaluate** results against the current hypothesis in `idea.md`
+3. **Classify** the outcome:
+   - **Supports** → log confirmation, proceed
+   - **Partially supports** → update hypothesis to emphasize what works
+   - **Contradicts** → pivot the idea, redefine success criteria
+   - **Unexpected finding** → expand the idea to include new contribution
+4. **If idea needs updating:**
+   - Read current `idea.json` to get the version number
+   - Append a new version entry to `idea_evolution.md` (what changed, why, impact)
+   - Rewrite `idea.md` with the updated hypothesis, method, or metrics
+   - Update `idea.json` (increment version, update `last_updated` and `update_reason`)
+   - Append `idea_updated` event to `research_log.jsonl`
+
+**Never ignore contradictory evidence.** If the experiment doesn't support the claim, update the claim — don't cherry-pick results.
 
 ## The 4 Experiment Stages
 
@@ -20,7 +43,7 @@ Work through these stages sequentially. Each stage builds on the previous one's 
 
 **Goal:** Produce a correct, running implementation of the proposed method.
 
-1. Read `idea.md` to understand what needs to be implemented
+1. Read `idea.md` (check version in `idea.json`) to understand what needs to be implemented
 2. Write `runfile.py` (or a more descriptively named script) that:
    - Loads or generates the required data
    - Implements the proposed method
@@ -32,6 +55,7 @@ Work through these stages sequentially. Each stage builds on the previous one's 
 3. Run the script and check the output
 4. If there are errors, debug and re-run (up to 3 debug attempts per issue)
 5. Verify the results make basic sense (sanity checks)
+6. **→ Log & Evaluate:** Append `experiment_completed` event to `research_log.jsonl`. Assess if initial results are consistent with the hypothesis.
 
 **Output format for metrics** (print to stdout):
 ```
@@ -50,6 +74,7 @@ np.save("experiment_results/test_accuracies.npy", test_accuracies)
 
 **Goal:** Implement baselines and run fair comparisons.
 
+0. **Read memory:** Check `research_log.jsonl` for Phase 1 findings. Re-read `idea.md` in case it was updated.
 1. Implement each baseline method described in `idea.md`
 2. Run all methods (proposed + baselines) under identical conditions:
    - Same data splits
@@ -75,11 +100,17 @@ np.save("experiment_results/test_accuracies.npy", test_accuracies)
    with open("baseline_summary.json", "w") as f:
        json.dump(summary, f, indent=2)
    ```
+6. **→ Log & Evaluate:** This is the most critical feedback point. If baselines outperform the proposed method, **update the idea**:
+   - Shift the claim (e.g., from "higher accuracy" to "better efficiency-accuracy tradeoff")
+   - Add new metrics that capture the actual advantage
+   - Or pivot the approach entirely
+   - Document the change in `idea_evolution.md` and `research_log.jsonl`
 
 ### Stage 3: Full Experiments (comprehensive results)
 
 **Goal:** Run full-scale experiments with thorough evaluation.
 
+0. **Read memory:** Re-read `idea.md` — it may have been updated after Phase 2. Check `idea_evolution.md` to understand what changed and why.
 1. Scale up from Stage 2:
    - Full dataset (not subsampled)
    - More evaluation metrics
@@ -106,11 +137,13 @@ np.save("experiment_results/test_accuracies.npy", test_accuracies)
    with open("research_summary.json", "w") as f:
        json.dump(summary, f, indent=2)
    ```
+5. **→ Log & Evaluate:** Full-scale results may reveal scaling behaviors not visible in Phase 2. If findings change the story, update the idea.
 
 ### Stage 4: Ablation Studies (validate components)
 
 **Goal:** Systematically validate which components of the proposed method matter.
 
+0. **Read memory:** Re-read `idea.md` — ablate the *current* version of the method, which may have evolved since Stage 1.
 1. Identify the key components to ablate (from `idea.md` and Stage 3 results)
 2. For each ablation:
    - Remove or replace one component at a time
@@ -142,6 +175,7 @@ np.save("experiment_results/test_accuracies.npy", test_accuracies)
    with open("ablation_summary.json", "w") as f:
        json.dump(summary, f, indent=2)
    ```
+6. **→ Log & Evaluate:** If ablations show a component is unnecessary, consider simplifying the method and updating `idea.md`.
 
 ## Iteration and Debugging
 
@@ -174,7 +208,10 @@ After all 4 stages, the workspace should contain:
 
 ```
 experiments/{idea_name}/
-├── idea.md
+├── idea.md                       # Current idea (final version, may differ from v1)
+├── idea.json                     # Metadata with version number
+├── idea_evolution.md             # Complete history of idea changes
+├── research_log.jsonl            # Full event log (all experiments + idea updates)
 ├── config.yaml
 ├── runfile.py                    # Main experiment script(s)
 ├── baseline_summary.json         # Stage 2 summary
