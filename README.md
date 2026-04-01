@@ -169,6 +169,7 @@ See `paper_generate.md` for full details on the memory architecture and event sc
 
 - The skills and pipeline design are derived from [SakanaAI/AI-Scientist-v2](https://github.com/SakanaAI/AI-Scientist-v2). This repo adapts their approach for native use within Claude Code.
 - The long-term memory and idea evolution system is inspired by [facebookresearch/Hyperagents](https://github.com/facebookresearch/Hyperagents), which uses a multi-layered memory architecture (append-only event logs, evolutionary lineage tracking, and performance-based selection) to enable agents to learn and evolve across generations.
+- The iterative refinement loop (Stage 7) is inspired by the harness pattern in [karpathy/autoresearch](https://github.com/karpathy/autoresearch/tree/master) (`program.md`), which uses an autonomous run → measure → keep/revert loop to continuously improve results. We apply the same idea to paper quality: review → score → fix weaknesses → re-review, until the paper reaches acceptance.
 
 ## License
 
