@@ -63,6 +63,8 @@ Before running any stage, check whether the `SLR/` directory contains deep resea
                               → Stage 4: Gather citations      [Skill: gather-citations]
                               → Stage 5: Write LaTeX paper     [Skill: write-paper]
                               → Stage 6: Self-review           [Subagent: perform-review]
+                              → Stage 7: Refinement loop        [Loop: write-paper ↔ perform-review]
+                              │           ↕ until Overall ≥ 7 or max 5 rounds
                               → [Finished Paper PDF + Review]
 ```
 
@@ -427,6 +429,71 @@ experiments/{idea_name}/
 **Output:**
 ```
 experiments/{idea_name}/
-└── review_text.json
+├── review_text.json
+└── review_results.tsv
+```
+
+---
+
+## Stage 7: Iterative Refinement Loop
+
+> **Invocation:** No separate skill — orchestrated by the pipeline itself, calling Stage 5 (write-paper) and Stage 6 (perform-review) repeatedly.
+
+Inspired by the [autoresearch](https://github.com/pengqianhan/autoresearch) pattern: run → measure → decide → iterate. The review score is the metric; the goal is **Overall ≥ 7** (Accept).
+
+### Setup
+
+After the first Stage 6 review completes, initialize `review_results.tsv` in the experiment directory:
+
+```
+round	overall	decision	top_weaknesses	action_taken
+1	5	Reject	missing baselines; weak related work; unclear method section	(initial review)
+```
+
+### The Loop
+
+```
+LOOP (max 5 rounds):
+  1. Parse review_text.json → extract Overall score and Weaknesses
+  2. Log to review_results.tsv
+  3. If Overall >= 7 → STOP (paper accepted)
+  4. Rank weaknesses by severity → pick top 2-3 actionable items
+  5. Revise ONLY the targeted sections (do not rewrite the whole paper)
+     - If weakness is "missing baselines" → go back to Stage 2 Phase 2, then update tables/figures
+     - If weakness is "unclear writing" → revise the specific section in LaTeX
+     - If weakness is "insufficient citations" → run Stage 4 for the gap, update related work
+     - If weakness is "claims not supported" → check data, fix claims or add evidence
+  6. Recompile LaTeX: pdflatex → bibtex → pdflatex → pdflatex
+  7. Re-run Stage 6 (perform-review) on the revised paper
+  8. Log new results to review_results.tsv
+  9. If improved → keep changes (git commit with round number)
+     If worse or equal → revert changes, try a different fix strategy
+```
+
+### Restraint Principle
+
+- **Minimal edits per round.** Fix only what the review flagged — do not refactor or restructure beyond the identified weaknesses.
+- **Diminishing returns.** If the score plateaus for 2 consecutive rounds, stop. Log final state and move on.
+- **No chasing perfection.** A score of 7 is the target, not 10. Once accepted, stop iterating.
+
+### Example `review_results.tsv`
+
+```
+round	overall	decision	top_weaknesses	action_taken
+1	5	Reject	missing baselines; weak related work	(initial review)
+2	6	Reject	related work still thin; method section unclear	added 5 citations; rewrote Section 3.2
+3	7	Accept	minor presentation issues	strengthened baseline comparison table
+```
+
+### Output
+
+The final state after the loop:
+```
+experiments/{idea_name}/
+├── review_results.tsv          # Full log of all review rounds
+├── review_text.json            # Latest review (final round)
+└── latex/
+    ├── template.tex            # Revised paper
+    └── template.pdf
 ```
 
