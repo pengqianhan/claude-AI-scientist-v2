@@ -1,22 +1,8 @@
 # Paper Generation Pipeline
 
 This document guides Claude Code through the complete process of generating a scientific paper from a research idea — without depending on any existing codebase. Follow Stage 0 first, then Stages 1-6 in order.
-
-## How to Use
-
-Copy the `skills/` directory and this file into any repo. Then tell Claude Code:
-
-> "Read paper_generate.md and run Stage 0 first, then Stages 1-6 to generate a paper about [your idea]."
-
-If you have a Systematic Literature Review (SLR), place your markdown files in the `SLR/` directory and tell Claude Code:
-
-> "Read paper_generate.md. Run Stage 0 first, then use the SLR materials in `SLR/` to generate a research idea and produce a paper."
-
-Claude Code will use the skills to work through each stage autonomously.
-
----
-
-## SLR (Systematic Literature Review) Input
+## Setup
+### SLR (Systematic Literature Review) Input
 
 If an `SLR/` directory exists in the project root, it contains literature review materials in markdown format (one or more `.md` files). These files may include:
 
@@ -28,13 +14,7 @@ If an `SLR/` directory exists in the project root, it contains literature review
 
 A deep research prompt template is available at `SLR/deepresearch_prompt.md`. Use it with ChatGPT, Claude, or Gemini to generate SLR content, then save the output as `.md` files in `SLR/`.
 
-**How SLR feeds into the pipeline:**
-
-- **Stage 1 (Idea Setup):** Read all `.md` files in `SLR/` first. Use them to understand the research landscape, identify gaps, and refine (or generate) the research idea.
-- **Stage 4 (Gather Citations):** Extract paper titles, authors, and venues mentioned in the SLR files as seed citations.
-- **Stage 5 (Write Paper):** Use the SLR content to write a stronger Related Work section.
-
----
+Once the SLR materials are generated, you can proceed to the following stages.
 
 ## Stage 0: SLR Pre-Check (MANDATORY before starting the pipeline)
 
@@ -448,4 +428,3 @@ experiments/{idea_name}/
 └── review_text.json
 ```
 
----
