@@ -18,6 +18,8 @@ Once the SLR materials are generated, you can proceed to the following stages.
 
 ## Stage 0: SLR Pre-Check (MANDATORY before starting the pipeline)
 
+> **Invocation:** No skill or subagent — handled by inline prompt logic.
+
 Before running any stage, check whether the `SLR/` directory contains deep research output:
 
 1. List all files in `SLR/`
@@ -50,17 +52,17 @@ Before running any stage, check whether the `SLR/` directory contains deep resea
 
 ```
 [SLR Pre-Check] ─────────────→ (guide user if no deep research output)
-                                     │
+                                     │                        (no skill/subagent)
 [SLR Materials (optional)] ─┐       ↓
-                             ├→ Stage 1: Setup workspace + initialize memory
+                             ├→ Stage 1: Setup workspace      [Skill: idea-setup]
 [Research Idea] ─────────────┘
-                              → Stage 2: Run experiments (4 phases)
-                              │           ↕ feedback loop: results update idea
+                              → Stage 2: Run experiments       [Skill: run-experiments]
+                              │           ↕ feedback loop
                               │           (research_log.jsonl tracks all changes)
-                              → Stage 3: Create publication figures
-                              → Stage 4: Gather citations (seeded from SLR)
-                              → Stage 5: Write LaTeX paper (reflects evolved idea)
-                              → Stage 6: Self-review with scores
+                              → Stage 3: Create publication figures [Skill: aggregate-plots]
+                              → Stage 4: Gather citations      [Skill: gather-citations]
+                              → Stage 5: Write LaTeX paper     [Skill: write-paper]
+                              → Stage 6: Self-review           [Subagent: perform-review]
                               → [Finished Paper PDF + Review]
 ```
 
@@ -163,7 +165,7 @@ The pipeline uses these operations throughout:
 
 ## Stage 1: Idea Setup
 
-**Skill:** `idea-setup`
+> **Invocation:** Skill `/idea-setup`
 
 **Input:** A research idea (from the user, a JSON file, or a conversation), optionally informed by SLR materials
 
@@ -205,7 +207,7 @@ experiments/{idea_name}/
 
 ## Stage 2: Run Experiments
 
-**Skill:** `run-experiments`
+> **Invocation:** Skill `/run-experiments`
 
 **Input:** The workspace from Stage 1 (including initialized memory)
 
@@ -290,7 +292,7 @@ experiments/{idea_name}/
 
 ## Stage 3: Aggregate Plots
 
-**Skill:** `aggregate-plots`
+> **Invocation:** Skill `/aggregate-plots`
 
 **Input:** `.npy` files and summary JSONs from Stage 2
 
@@ -329,7 +331,7 @@ experiments/{idea_name}/
 
 ## Stage 4: Gather Citations
 
-**Skill:** `gather-citations`
+> **Invocation:** Skill `/gather-citations`
 
 **Input:** `idea.md`, experiment summaries, and optionally `SLR/` materials
 
@@ -359,7 +361,7 @@ experiments/{idea_name}/
 
 ## Stage 5: Write Paper
 
-**Skill:** `write-paper`
+> **Invocation:** Skill `/write-paper`
 
 **Input:** Everything from Stages 1-4, especially:
 - `idea.md` (final evolved version — check `idea.json` version number)
@@ -401,7 +403,7 @@ experiments/{idea_name}/
 
 ## Stage 6: Perform Review
 
-**Skill:** `perform-review`
+> **Invocation:** Subagent `perform-review`
 
 **Input:** The compiled PDF or LaTeX source
 
