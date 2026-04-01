@@ -38,6 +38,7 @@ This repo replaces all of that with **6 Claude Code skills** and a single pipeli
 - Python 3.8+ with `numpy`, `matplotlib`
 - ML framework as needed (`torch`, `tensorflow`, `sklearn`, etc.)
 - (Optional) `pdflatex` + `bibtex` for PDF compilation — LaTeX source is always produced
+- Internet access for citations (Semantic Scholar API / web search)
 
 ### 2. Clone
 
@@ -55,7 +56,7 @@ Read paper_generate.md. I want to generate a research paper about:
 
 [Describe your research idea here]
 
-Follow all 6 stages. Set up the workspace, implement and run the experiments,
+Run Stage 0 first, then follow Stages 1-6. Set up the workspace, implement and run the experiments,
 create publication figures, gather citations, write the LaTeX paper, and
 self-review it. Save everything under experiments/.
 ```
@@ -65,15 +66,17 @@ self-review it. Save everything under experiments/.
 ```
 Read paper_generate.md. I have systematic literature review materials in SLR/.
 Read the SLR files first, then generate a research idea based on the gaps
-and opportunities you find. Follow all 6 stages to produce a complete paper.
+and opportunities you find. Run Stage 0 first, then follow Stages 1-6 to
+produce a complete paper.
 ```
 
 **Generate SLR from scratch:** The repo includes a deep research prompt template at `SLR/deepresearch_prompt.md`. Use it to generate comprehensive literature reviews with any AI deep research tool:
 
-1. Open `SLR/deepresearch_prompt.md` and replace `{topic}` with your research topic
-2. Paste the prompt into **ChatGPT** (Deep Research), **Claude**, or **Gemini** (Deep Research)
-3. Copy the AI's output as markdown and save it in `SLR/` (e.g., `SLR/my_topic_review.md`)
-4. Run the pipeline with the SLR prompt above
+1. Open `SLR/deepresearch_prompt.md`
+2. Replace `{topic}` with your research topic
+3. Paste the prompt into **ChatGPT** (Deep Research), **Claude**, or **Gemini** (Deep Research)
+4. Copy the output as markdown and save it in `SLR/` (for example, `SLR/your_topic_review.md`)
+5. Run the pipeline with the SLR prompt above
 
 The deep research prompt generates a structured output including: literature database, taxonomy, gap analysis, and traceable research ideas — all of which feed directly into the pipeline.
 
