@@ -405,7 +405,7 @@ experiments/{idea_name}/
    - Round 2: Content accuracy and support for claims
    - Round 3: Polish, grammar, page limit
 
-**Page limit:** 4 pages for workshop, 8 pages for conference (excluding references and appendix).
+**Page limit:** 4 pages for workshop, 9 pages for conference (excluding references and appendix).
 
 **Output:**
 ```
